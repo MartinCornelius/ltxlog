@@ -6,6 +6,8 @@
 #include "file-utils.h"
 #include "utils.h"
 
+extern char workdir[];
+
 int nr_errors = 0;
 int nr_warnings = 0;
 char current_file_name[256];
@@ -14,6 +16,7 @@ void sum_log_file(char *path)
 {
   FILE *f = fopen(path, "r");
   if(!f) {
+    printf("path to open: %s\n", path);
     perror("fopen");
   }
 
@@ -40,7 +43,9 @@ void sum_log_file(char *path)
     /* Print source line from tex file */
     if (strncmp(line, "l.", 2) == 0 && isdigit(line[2])) {
       int lineno = atoi(line + 2);
-      print_tex_line(current_file_name, lineno);
+      char full_path[1024];
+      snprintf(full_path, sizeof(full_path), "%s/%s", workdir, current_file_name);
+      print_tex_line(full_path, lineno);
     }
     
     /* Error types */
