@@ -1,0 +1,7 @@
+ltxlog
+*.o
+
+test/*
+!test/sections
+!test/master.tex
+!test/master.log
