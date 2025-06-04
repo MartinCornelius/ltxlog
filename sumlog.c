@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include "sumlog.h"
+#include "file-utils.h"
 #include "utils.h"
 
 int nr_errors = 0;
 int nr_warnings = 0;
+char current_file_name[256];
 
 void sum_log_file(char *path)
 {
@@ -29,6 +32,17 @@ void sum_log_file(char *path)
       printf("%s", line);
     }
 
+    /* Track current file */
+    if (extract_tex_filename(line, current_file_name, sizeof(current_file_name))) {
+      push_file(current_file_name);
+    }
+    
+    /* Print source line from tex file */
+    if (strncmp(line, "l.", 2) == 0 && isdigit(line[2])) {
+      int lineno = atoi(line + 2);
+      print_tex_line(current_file_name, lineno);
+    }
+    
     /* Error types */
     if (strstr(line, "!")) {
       printf("[ERROR] %s", line);
@@ -39,13 +53,6 @@ void sum_log_file(char *path)
         printf("file: %s", prev_line);
       }
     }
-    /*
-    else if (strstr(line, "Warning")) {
-      printf("[WARN] %s", line);
-      nr_warnings += 1;
-      found_error = 1;
-    }
-    */
 
     strncpy(prev_line, line, sizeof(prev_line) - 1);
   }

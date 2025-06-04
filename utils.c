@@ -48,3 +48,62 @@ int is_irrelevant(const char *line)
 
   return 0;
 }
+
+/*
+ * Extracts the filepath for a tex file
+ * Returns 1 if a filename was found, 0 otherwise
+ */
+int extract_tex_filename(const char *line, char *out, size_t out_size)
+{
+  const char *p = line;
+
+  // skip whitespace and opening '('
+  while (*p && (*p == '(' || isspace(*p))) {
+    p++;
+  }
+
+  const char *tex = strstr(p, ".tex");
+  if (!tex) return 0;
+
+  const char *start = tex;
+  // TODO: PLEASE FIX ME
+  while (start > p && (isalnum(*(start - 1)) || *(start - 1) == '/' || *(start - 1) == '.' || *(start - 1) == '_')) {
+    start--;
+  }
+
+  size_t len = tex - start + 4; /* ".tex" = 4 chars */
+  if (len >= out_size) len = out_size - 1;
+
+  strncpy(out, start, len);
+  out[len] = '\0';
+
+  return 1;
+}
+
+void print_tex_line(const char *filename, int target_line)
+{
+  FILE *f = fopen(filename, "r");
+  if (!f) {
+    fprintf(stderr, "[WARN] Could not open file: %s\n", filename);
+    return;
+  }
+
+  char buf[1024];
+  char prev_buf[1024];
+  int lineno = 1;
+  while (fgets(buf, sizeof(buf), f)) {
+    if (lineno == target_line) {
+      /* This solution is very janky! */
+      if (*buf == '\n') {
+        printf("\t[adjusted]--> %s:%d: %s", filename, lineno - 1, prev_buf);
+      }
+      else {
+        printf("\t--> %s:%d: %s", filename, lineno, buf);   
+      }
+      break;
+    }
+    lineno++;
+    strncpy(prev_buf, buf, sizeof(prev_buf) - 1);
+  }
+  fclose(f);
+}
