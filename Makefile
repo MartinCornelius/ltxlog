@@ -3,7 +3,7 @@ CC=gcc
 
 TARGET=ltxlog
 
-SRCS=ltxlog.c sumlog.c version.c
+SRCS=ltxlog.c sumlog.c version.c utils.c
 OBJS=$(SRCS:.c=.o)
 
 all: $(TARGET)
@@ -13,4 +13,3 @@ $(TARGET): $(OBJS)
 
 clean:
 	rm -f *.o $(TARGET)
-

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "sumlog.h"
+#include "utils.h"
 
 int nr_errors = 0;
 int nr_warnings = 0;
@@ -13,35 +14,29 @@ void sum_log_file(char *path)
     perror("fopen");
   }
 
-  char line[4096];
-  char prev_line[4096];
+  char line[1024];
+  char prev_line[1024];
   int found_error = 0;
   while (fgets(line, sizeof(line), f)) {
-    /*
-     * This should not check for '?' but rather
-     * check for empty string. I think that will
-     * be the best option.
-     * Alternatively, it would need different
-     * things to look for based on the error message.
-     */
-    if (found_error && strstr(line, "?")) {
+    if (found_error && is_blank_line(line)) {
       found_error = 0;
-      printf("%s\n", line);
+      printf("\n");
     }
-    else if (found_error && isblank(line[0])) {
+    else if (found_error && is_irrelevant(line)) {
       continue;
     }
     else if (found_error) {
-      printf("%s\n", line);
+      printf("%s", line);
     }
 
+    /* Error types */
     if (strstr(line, "!")) {
       printf("[ERROR] %s", line);
       nr_errors += 1;
       found_error = 1;
 
       if (found_error && strstr(prev_line, ".tex")) {
-        printf("file: %s\n", prev_line);
+        printf("file: %s", prev_line);
       }
     }
     /*
