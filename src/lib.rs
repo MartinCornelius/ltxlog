@@ -22,9 +22,11 @@ pub struct LogEvent {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Config {
+    /// Filepath to the main log file
     #[arg(default_value_t=String::from("master.log"))]
     file_path: String,
 
+    /// If true, prints the full summary
     #[arg(short, long, default_value_t=false)]
     pub full: bool,
 }
